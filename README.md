@@ -2,8 +2,6 @@
 
 This document describes the server-to-server (S2S) integration that forwards AB Tasty events to Google Analytics 4 (GA4). It targets engineers who operate or maintain the event delivery pipeline.
 
-
-
 ## Architecture Diagram
 
 ```mermaid
@@ -23,8 +21,6 @@ flowchart LR
     F --> H
 ```
 
-
-
 ## High-Level Flow
 
 1. The AB Tasty Web SDK sends batched events to the Ariane endpoint.  
@@ -35,16 +31,12 @@ flowchart LR
 6. The FS Push Connector pulls from that topic and sends GA4 hits through the Measurement Protocol.  
 7. Failed pushes are redirected to a Dead Letter Queue (DLQ) for later reprocessing.  
 
-
-
 ## Why Server-to-Server
 
 - Eliminates client-side blockers such as ad blockers.  
 - Ensures consistent tagging and event mapping.  
 - Supports retries and exponential backoff on failures.  
 - Keeps the GA4 API secret secure and out of the browser.  
-
-
 
 ## How to Configure GA4 Measurement Protocol
 
@@ -83,18 +75,11 @@ Below is an example of how this looks in the AB Tasty settings interface:
 
 Once enabled, AB Tasty sends campaign events to GA4 both from the client-side session and the server, ensuring better reliability and data consistency.
 
-
-
 ## Benefits of Using Measurement Protocol
 
 - **Data resilience:** Uses the same event data for AB Tasty and GA4, ensuring consistent tracking.  
 - **Improved accuracy:** Reduces discrepancies caused by ad blockers or script failures.  
 - **Full coverage:** Complements client-side tracking with robust server-side delivery.
-
-
-
-
-
 
 ## Incoming Payload Example
 
@@ -134,8 +119,6 @@ AB Tasty sends batches as plain text JSON (`content-type: text/plain; charset=UT
 - `vid` is the AB Tasty visitor ID.  
 - `h` contains individual events to be mapped to GA4 events.  
 
-
-
 ## Where to Find GA4 Data in the Ariane Payload
 
 The GA4 data is directly visible in the browser’s Network panel when inspecting Ariane requests. You can confirm that GA4 information is correctly embedded before it ever reaches the backend.
@@ -153,33 +136,59 @@ The GA4 data is directly visible in the browser’s Network panel when inspectin
 curl 'https://ariane.abtasty.com/'   -H 'accept: */*'   -H 'content-type: text/plain;charset=UTF-8'   -H 'origin: https://val-nextjs-abtasty.vercel.app'   -H 'referer: https://val-nextjs-abtasty.vercel.app/'   --data-raw '{"c":{"1446694":"1798770","1528682":"0"},"cid":"1ceff369b6cd9aceaa9ee318e6498167","vid":"50j4xej08thkh2fc","dr":"","pt":"","de":"UTF-8","dl":"https%3A%2F%2Fval-nextjs-abtasty.vercel.app%2Fproducts%2F4","cst":1761924519338,"sn":3,"lv":"NgyzkXQL","tsv":"4.23.0","tv":"latest","tch":"1bf6d","h":[{"qt":523,"t":"PAGEVIEW"},{"caid":"1446694","vaid":"1798770","qt":503,"t":"CAMPAIGN"},{"caid":"1528682","vaid":"0","qt":502,"t":"CAMPAIGN","ga4":{"iids":["11151"],"cid":"634188769.1761913011","sid":"1761924527","tsS":1761925404752000,"pl":"https://val-nextjs-abtasty.vercel.app/products/4","pt":"Unknown Title"}}],"t":"BATCH"}'
 ```
 
-### Key GA4 Fields
+## Detailed Explanation of GA4 Fields
 
-| Payload field | Description | GA4 Mapping |
-|  |  |  |
-| `ga4.cid` | Client ID | `client_id` |
-| `ga4.sid` | Session ID | `ga_session_id` |
-| `ga4.tsS` | Session start timestamp (µs) | `session_start` timing |
-| `ga4.iids` | Integration IDs | Custom event parameters |
-| `ga4.pl` | Page location | `page_location` |
-| `ga4.pt` | Page title | `page_title` |
-| `vid` | AB Tasty visitor ID | Optional user property |
+| **Field** | **Description** | **GA4 Equivalent** | **Purpose** |
+|------------|----------------|--------------------|--------------|
+| `ga4.cid` | Client ID | `client_id` | Identifies a unique user instance of the app or site. |
+| `ga4.sid` | Session ID | `ga_session_id` | A unique numeric identifier for the user’s current session. |
+| `ga4.tsS` | Session start timestamp (in microseconds) | Used for `session_start` event timing | Records the exact time the session began. |
+| `ga4.iids` | Integration IDs | Custom event parameters | Links AB Tasty experiments or features to GA4 events. |
+| `ga4.pl` | Page location | `page_location` | The full URL of the page where the event occurred. |
+| `ga4.pt` | Page title | `page_title` | The title of the web page where the event was triggered. |
+| `vid` | AB Tasty Visitor ID | Optional user property | Identifies the user according to AB Tasty’s visitor logic. |
 
-### Why It Matters
+### Example Event Mapping
 
-- Confirms that GA4 event data exists before backend processing.  
-- Enables debugging directly from browser Network traffic.  
-- Shows the same fields that FS Push Connector uses to create Measurement Protocol hits.  
+```json
+{
+  "caid": "1528682",
+  "vaid": "0",
+  "qt": 502,
+  "t": "CAMPAIGN",
+  "ga4": {
+    "iids": ["11151"],
+    "cid": "634188769.1761913011",
+    "sid": "1761924527",
+    "tsS": 1761925404752000,
+    "pl": "https://val-nextjs-abtasty.vercel.app/products/4",
+    "pt": "Unknown Title"
+  }
+}
+```
 
-### Quick Validation
+Converted GA4 payload (simplified):
 
-1. Trigger a campaign or page view.  
-2. Inspect Ariane request payload.  
-3. Expand the event object containing `ga4`.  
-4. Check that `ga4.cid`, `ga4.sid`, and `ga4.pl` align with your GA session values.  
-
-
+```json
+{
+  "client_id": "634188769.1761913011",
+  "user_properties": {
+    "abtasty_vid": { "value": "50j4xej08thkh2fc" }
+  },
+  "events": [
+    {
+      "name": "campaign",
+      "params": {
+        "ga_session_id": 1761924527,
+        "page_location": "https://val-nextjs-abtasty.vercel.app/products/4",
+        "page_title": "Unknown Title",
+        "abtasty_integration_id": "11151"
+      }
+    }
+  ]
+}
+```
 
 ## Changelog
 
-- **2025-10-31** – Added GA4 payload inspection section and simplified architecture diagram.
+- **2025-10-31** – Added GA4 payload inspection section, detailed GA4 field explanations, and simplified architecture diagram.
