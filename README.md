@@ -9,11 +9,11 @@ This document describes the server-to-server (S2S) integration that forwards AB 
 ```mermaid
 flowchart LR
     A["AB Tasty Tag (Browser)"]
-    B["Ariane Entry Point"]
+    B["AB Tasty Data Collect Entry Point"]
     C["Pub/Sub Ingest"]
     D["Hit Builder"]
     E["Yoshi (Metadata API)"]
-    F["FS Push Connector"]
+    F["Push Connector"]
     G["Google Analytics 4"]
     H["Dead Letter Queue (DLQ)"]
 
