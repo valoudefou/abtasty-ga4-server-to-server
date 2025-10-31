@@ -27,7 +27,7 @@ The **AB Tasty x GA4 Server-to-Server Integration** ensures that both platforms 
 - **Guarantees data completeness through retries**  
   Automatic retries and exponential backoff ensure reliable event delivery, even during temporary API or network issues.
 
-  ## Architecture Diagram
+## Architecture Diagram
 
 ```mermaid
 flowchart LR
