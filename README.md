@@ -23,7 +23,7 @@ flowchart LR
 
 ## High-Level Flow
 
-1. The AB Tasty Web SDK sends batched events to the Ariane endpoint.  
+1. The AB Tasty Web pixel sends batched events to the AB Tasty Data Collect.  
 2. The Entry Point service validates and normalises the batch.  
 3. The service publishes each event to Pub/Sub.  
 4. The Hit Builder subscribes, enriches events, and calls **Yoshi** via gRPC for rules or metadata.  
