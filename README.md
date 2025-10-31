@@ -7,8 +7,6 @@ This document describes the server-to-server (S2S) integration that forwards AB 
 
 The **AB Tasty x GA4 Server-to-Server Integration** ensures that both platforms capture identical, validated data directly from the backend. This unified approach removes inconsistencies caused by browser conditions, consent differences, or timing mismatches, delivering cleaner, more reliable analytics.
 
-### Key Benefits
-
 - **Eliminates client-side blockers such as ad blockers**  
   Events are transmitted server-side, preventing data loss from browser extensions, tracking prevention, or unstable network conditions.  
 
