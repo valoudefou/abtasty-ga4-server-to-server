@@ -2,7 +2,7 @@
 
 This document describes the server-to-server (S2S) integration that forwards AB Tasty events to Google Analytics 4 (GA4). It targets engineers who operate or maintain the event delivery pipeline.
 
----
+
 
 ## Architecture Diagram
 
@@ -25,7 +25,7 @@ flowchart LR
     end
 ```
 
----
+
 
 ## High-Level Flow
 
@@ -37,7 +37,7 @@ flowchart LR
 6. The FS Push Connector pulls from that topic and sends GA4 hits through the Measurement Protocol.  
 7. Failed pushes are redirected to a Dead Letter Queue (DLQ) for later reprocessing.  
 
----
+
 
 ## Why Server-to-Server
 
@@ -46,7 +46,7 @@ flowchart LR
 - Supports retries and exponential backoff on failures.  
 - Keeps the GA4 API secret secure and out of the browser.  
 
----
+
 
 ## How to Configure GA4 Measurement Protocol
 
@@ -98,7 +98,7 @@ If data doesn’t appear in GA4:
 - Verify that your API secret is valid and active.  
 - Confirm that the campaign is live (events only send for active campaigns).  
 
----
+
 
 ## Components
 
@@ -132,7 +132,7 @@ If data doesn’t appear in GA4:
 - Stores failed events for review or replay.  
 - Replay jobs can requeue fixed messages for reprocessing.  
 
----
+
 
 ## Incoming Payload Example
 
@@ -172,115 +172,7 @@ AB Tasty sends batches as plain text JSON (`content-type: text/plain; charset=UT
 - `vid` is the AB Tasty visitor ID.  
 - `h` contains individual events to be mapped to GA4 events.  
 
----
 
-## Mapping to GA4 Measurement Protocol
-
-Each event results in an HTTP POST to:
-
-```
-https://www.google-analytics.com/mp/collect?measurement_id=<MEASUREMENT_ID>&api_secret=<API_SECRET>
-```
-
-Example payload:
-
-```json
-{
-  "client_id": "50j4xej08thkh2fc",
-  "user_id": "1ceff369b6cd9aceaa9ee318e6498167",
-  "timestamp_micros": 1761925404752000,
-  "non_personalized_ads": false,
-  "events": [
-    {
-      "name": "ab_page_view",
-      "params": {
-        "page_location": "https://val-nextjs-abtasty.vercel.app/products/4",
-        "engagement_time_msec": 523,
-        "ab_caid": "1528682",
-        "ab_vaid": "0",
-        "experiment_ids": "11151",
-        "debug_mode": false
-      }
-    }
-  ]
-}
-```
-
-**Recommendations**
-- Prefix AB Tasty attributes with `ab_`.  
-- Use GA4 standard parameters (`page_location`, `session_id`) where applicable.  
-- Set `debug_mode` to true when sending to the debug endpoint.  
-
----
-
-## Identity and Sessions
-
-- Prefer `user_id` when a stable user identifier is available.  
-- Fallback to `client_id` derived from the AB Tasty visitor ID if necessary.  
-- Map AB Tasty session data to GA4’s `session_id` when available.  
-
----
-
-## Error Handling and Retries
-
-- The connector retries on `429` and `5xx` responses with exponential backoff.  
-- On `400` or `403`, it writes the failed event to the DLQ along with the response body.  
-- A replay tool can read from DLQ and requeue events after configuration fixes.  
-
----
-
-## Observability
-
-- Log structured entries with `event_id`, `caid`, `vaid`, and `status`.  
-- Collect metrics: ingestion rate, builder latency, push success rate, DLQ depth.  
-- Expose health endpoints for all services.  
-
----
-
-## Configuration
-
-| Key | Example | Purpose |
-| --- | --- | --- |
-| `GA4_MEASUREMENT_ID` | G-XXXXXXX | GA4 target property |
-| `GA4_API_SECRET` | secret | Measurement Protocol authentication |
-| `PUSH_TIMEOUT_MS` | 5000 | GA4 HTTP timeout |
-| `PUBSUB_TOPIC_INGEST` | ingest | Input topic |
-| `PUBSUB_TOPIC_OUT` | builder.out | Output topic |
-| `PUBSUB_TOPIC_DLQ` | dlq | Dead letters |
-| `YOSHI_ADDR` | yoshi:50051 | gRPC endpoint |
-| `MAX_MSG_SIZE_BYTES` | 5000 | Message size limit |
-
----
-
-## Local Testing
-
-Use `curl` to send a sample batch to the entry point and validate connector behaviour:
-
-```bash
-curl -X POST "http://localhost:8080/ingest"   -H "content-type: text/plain; charset=UTF-8"   --data-binary @sample-batch.json
-```
-
-When testing, point the connector to the GA4 debug endpoint.  
-
----
-
-## Security
-
-- Keep the GA4 API secret server-side only.  
-- Require authentication tokens on the entry point.  
-- Enforce payload size and schema validation.  
-
----
-
-## Glossary
-
-- **Ariane** – AB Tasty collection endpoint for browser batches.  
-- **Hit Builder** – Service that transforms AB Tasty events for GA4.  
-- **Yoshi** – gRPC metadata service for campaign and variation lookups.  
-- **FS Push Connector** – Worker that pushes GA4 events.  
-- **DLQ** – Dead Letter Queue for failed messages.  
-
----
 
 ## Changelog
 
