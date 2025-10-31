@@ -8,21 +8,19 @@ This document describes the server-to-server (S2S) integration that forwards AB 
 
 ```mermaid
 flowchart LR
-    subgraph Current["CURRENT"]
-        subgraph Dev1["Already DEV"]
-            A["TAG AB TASTY"] -->|HTTP request| B["Entry Point"]
-            B --> C["Pub/Sub"]
-            C --> D["Hit Builder"]
-            D <--> E["Yoshi (gRPC API)"]
-            D --> F["Pub/Sub (limit 5K)"]
-        end
-        subgraph Dev2["Already DEV"]
-            F --> G["FS Push Connector"]
-            G -->|Push| H["GA4"]
-            G --> I["Dead Letter Queue"]
-        end
-        F -.-> I
-    end
+    A["AB Tasty Tag (Browser)"]
+    B["Ariane Entry Point"]
+    C["Pub/Sub Ingest"]
+    D["Hit Builder"]
+    E["Yoshi (Metadata API)"]
+    F["FS Push Connector"]
+    G["Google Analytics 4"]
+    H["Dead Letter Queue (DLQ)"]
+
+    A -->|Batch JSON| B --> C --> D
+    D <--> E
+    D --> F -->|Measurement Protocol| G
+    F --> H
 ```
 
 ---
@@ -224,4 +222,4 @@ curl 'https://ariane.abtasty.com/'   -H 'accept: */*'   -H 'content-type: text/p
 
 ## Changelog
 
-- **2025-10-31** – Added GA4 payload inspection section and clarified where GA4 data appears in Ariane requests.  
+- **2025-10-31** – Added GA4 payload inspection section and simplified architecture diagram.
