@@ -31,12 +31,20 @@ flowchart LR
 6. The FS Push Connector pulls from that topic and sends GA4 hits through the Measurement Protocol.  
 7. Failed pushes are redirected to a Dead Letter Queue (DLQ) for later reprocessing.  
 
-## Why Server-to-Server
+## Unifying AB Tasty and GA4 data to eliminate discrepancies
 
-- Eliminates client-side blockers such as ad blockers.  
-- Ensures consistent tagging and event mapping.  
-- Supports retries and exponential backoff on failures.  
-- Keeps the GA4 API secret secure and out of the browser.  
+- Eliminates client-side blockers such as ad blockers:
+Events are sent directly from the backend, ensuring no data is lost due to browser extensions, tracking prevention, or network restrictions.
+- Ensures consistent tagging and event mapping:
+Both AB Tasty and GA4 receive events from the same enriched payload, guaranteeing that campaign, event, and variation identifiers align perfectly across tools. 
+- Eliminates mismatch due to data consent given by the user across platforms:
+Consent logic is applied once at the server level, ensuring that both systems respect the same privacy settings and record events consistently.
+- Eliminates mismatch due to sessions counted vs unique users counted:
+Shared session and visitor identifiers maintain alignment between session-based and user-based metrics, reducing reporting gaps.
+- Accurate timing and sequencing:
+Events are timestamped server-side, preventing inconsistencies caused by device clock drift or late client event delivery.
+- Supports retries and exponential backoff on failures:
+The integration automatically retries failed deliveries, ensuring data completeness even when temporary API or network errors occur.
 
 ## How to Configure GA4 Measurement Protocol
 
