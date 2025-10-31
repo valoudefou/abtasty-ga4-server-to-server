@@ -13,7 +13,7 @@ flowchart LR
     C["Pub/Sub Ingest"]
     D["Hit Builder"]
     E["Yoshi (Metadata API)"]
-    F["Push Connector"]
+    F["FS Push Connector"]
     G["Google Analytics 4"]
     H["Dead Letter Queue (DLQ)"]
 
