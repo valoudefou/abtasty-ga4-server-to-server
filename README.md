@@ -189,6 +189,24 @@ Converted GA4 payload (simplified):
 }
 ```
 
+## How GA4 Knows About AB Tasty Campaign IDs
+
+GA4 learns about AB Tasty campaign IDs through enrichment and event mapping that occurs during the server-to-server integration flow, specifically in the Hit Builder and FS Push Connector stages.
+
+1. **AB Tasty Tag Sends Campaign Data**  
+   The AB Tasty Web SDK sends campaign and variation IDs (`caid`, `vaid`) in the Ariane payload.  
+
+2. **Hit Builder Enrichment**  
+   The Hit Builder enriches events by calling **Yoshi** to retrieve metadata and integration IDs (`iids`). These IDs map AB Tasty campaigns to GA4 parameters.  
+
+3. **FS Push Connector Mapping**  
+   The FS Push Connector converts the enriched data into GA4 Measurement Protocol format. Campaign metadata is included through custom parameters (like `abtasty_integration_id`).  
+
+4. **GA4 Event Storage**  
+   GA4 stores the received parameters and links them with user sessions. While GA4 never receives raw campaign IDs, it can identify the AB Tasty campaign through integration metadata.  
+
+In short, GA4 knows which AB Tasty campaign triggered an event because AB Tasty’s backend maps internal campaign IDs to GA4 integration parameters during enrichment before sending them via the Measurement Protocol.
+
 ## Changelog
 
 - **2025-10-31** – Added GA4 payload inspection section, detailed GA4 field explanations, and simplified architecture diagram.
