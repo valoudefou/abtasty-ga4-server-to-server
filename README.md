@@ -2,24 +2,6 @@
 
 This document describes the server-to-server (S2S) integration that forwards AB Tasty events to Google Analytics 4 (GA4).
 
-## Architecture Diagram
-
-```mermaid
-flowchart LR
-    A["AB Tasty Tag (Browser)"]
-    B["AB Tasty Data Collect Entry Point"]
-    C["Pub/Sub Ingest"]
-    D["Hit Builder"]
-    E["Yoshi (Metadata API)"]
-    F["FS Push Connector"]
-    G["Google Analytics 4"]
-    H["Dead Letter Queue (DLQ)"]
-
-    A -->|Batch JSON| B --> C --> D
-    D <--> E
-    D --> F -->|Measurement Protocol| G
-    F --> H
-```
 
 ## Unifying AB Tasty and GA4 Data to Eliminate Discrepancies
 
@@ -43,7 +25,26 @@ The **AB Tasty x GA4 Server-to-Server Integration** ensures that both platforms 
   Server-side timestamps guarantee precise event order, unaffected by device clock drift or delayed client events.  
 
 - **Guarantees data completeness through retries**  
-  Automatic retries and exponential backoff ensure reliable event delivery, even during temporary API or network issues.  
+  Automatic retries and exponential backoff ensure reliable event delivery, even during temporary API or network issues.
+
+  ## Architecture Diagram
+
+```mermaid
+flowchart LR
+    A["AB Tasty Tag (Browser)"]
+    B["AB Tasty Data Collect Entry Point"]
+    C["Pub/Sub Ingest"]
+    D["Hit Builder"]
+    E["Yoshi (Metadata API)"]
+    F["FS Push Connector"]
+    G["Google Analytics 4"]
+    H["Dead Letter Queue (DLQ)"]
+
+    A -->|Batch JSON| B --> C --> D
+    D <--> E
+    D --> F -->|Measurement Protocol| G
+    F --> H
+```
 
 ## High-Level Flow
 
