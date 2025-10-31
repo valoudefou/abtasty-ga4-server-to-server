@@ -2,7 +2,7 @@
 
 This document describes the server-to-server (S2S) integration that forwards AB Tasty events to Google Analytics 4 (GA4). It targets engineers who operate or maintain the event delivery pipeline.
 
----
+
 
 ## Architecture Diagram
 
@@ -23,7 +23,7 @@ flowchart LR
     F --> H
 ```
 
----
+
 
 ## High-Level Flow
 
@@ -35,7 +35,7 @@ flowchart LR
 6. The FS Push Connector pulls from that topic and sends GA4 hits through the Measurement Protocol.  
 7. Failed pushes are redirected to a Dead Letter Queue (DLQ) for later reprocessing.  
 
----
+
 
 ## Why Server-to-Server
 
@@ -44,7 +44,7 @@ flowchart LR
 - Supports retries and exponential backoff on failures.  
 - Keeps the GA4 API secret secure and out of the browser.  
 
----
+
 
 ## How to Configure GA4 Measurement Protocol
 
@@ -83,7 +83,7 @@ Below is an example of how this looks in the AB Tasty settings interface:
 
 Once enabled, AB Tasty sends campaign events to GA4 both from the client-side session and the server, ensuring better reliability and data consistency.
 
----
+
 
 ## Benefits of Using Measurement Protocol
 
@@ -91,7 +91,7 @@ Once enabled, AB Tasty sends campaign events to GA4 both from the client-side se
 - **Improved accuracy:** Reduces discrepancies caused by ad blockers or script failures.  
 - **Full coverage:** Complements client-side tracking with robust server-side delivery.
 
----
+
 
 ## Troubleshooting
 
@@ -100,7 +100,7 @@ If data doesn’t appear in GA4:
 - Verify that your API secret is valid and active.  
 - Confirm that the campaign is live (events only send for active campaigns).  
 
----
+
 
 ## Components
 
@@ -134,7 +134,7 @@ If data doesn’t appear in GA4:
 - Stores failed events for review or replay.  
 - Replay jobs can requeue fixed messages for reprocessing.  
 
----
+
 
 ## Incoming Payload Example
 
@@ -174,7 +174,7 @@ AB Tasty sends batches as plain text JSON (`content-type: text/plain; charset=UT
 - `vid` is the AB Tasty visitor ID.  
 - `h` contains individual events to be mapped to GA4 events.  
 
----
+
 
 ## Where to Find GA4 Data in the Ariane Payload
 
@@ -196,7 +196,7 @@ curl 'https://ariane.abtasty.com/'   -H 'accept: */*'   -H 'content-type: text/p
 ### Key GA4 Fields
 
 | Payload field | Description | GA4 Mapping |
-| --- | --- | --- |
+|  |  |  |
 | `ga4.cid` | Client ID | `client_id` |
 | `ga4.sid` | Session ID | `ga_session_id` |
 | `ga4.tsS` | Session start timestamp (µs) | `session_start` timing |
@@ -218,7 +218,7 @@ curl 'https://ariane.abtasty.com/'   -H 'accept: */*'   -H 'content-type: text/p
 3. Expand the event object containing `ga4`.  
 4. Check that `ga4.cid`, `ga4.sid`, and `ga4.pl` align with your GA session values.  
 
----
+
 
 ## Changelog
 
