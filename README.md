@@ -93,46 +93,6 @@ Once enabled, AB Tasty sends campaign events to GA4 both from the client-side se
 
 
 
-## Troubleshooting
-
-If data doesn’t appear in GA4:
-
-- Verify that your API secret is valid and active.  
-- Confirm that the campaign is live (events only send for active campaigns).  
-
-
-
-## Components
-
-### Entry Point
-- Receives AB Tasty event batches from the browser.  
-- Performs schema validation and authentication.  
-- Builds a standard envelope and writes to `pubsub.ingest`.  
-
-### Pub/Sub
-- Provides durable queuing between services.  
-- Topics: `ingest`, `builder.out`, `dlq`.  
-
-### Hit Builder
-- Subscribes to `ingest`.  
-- Enriches events with experiment context and user identity.  
-- Communicates with **Yoshi** via gRPC to fetch campaign and variation metadata.  
-- Validates message size, splitting or truncating near 5 KB.  
-- Publishes to `builder.out`.  
-
-### Yoshi (gRPC API)
-- Exposes AB Tasty campaign and variation metadata.  
-- Used by the Hit Builder for resolving IDs to names.  
-
-### FS Push Connector
-- Subscribes to `builder.out`.  
-- Converts messages to GA4 Measurement Protocol v2 format.  
-- Pushes events to GA4.  
-- On non-2xx responses, writes the event to `dlq` with error details.  
-
-### Dead Letter Queue (DLQ)
-- Stores failed events for review or replay.  
-- Replay jobs can requeue fixed messages for reprocessing.  
 
 
 
