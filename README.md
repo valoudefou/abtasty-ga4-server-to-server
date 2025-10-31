@@ -1,6 +1,6 @@
 # GA4 Server – AB Tasty S2S Integration
 
-This document describes the server-to-server (S2S) integration that forwards AB Tasty events to Google Analytics 4 (GA4). It targets engineers who operate or maintain the event delivery pipeline.
+This document describes the server-to-server (S2S) integration that forwards AB Tasty events to Google Analytics 4 (GA4).
 
 ## Architecture Diagram
 
